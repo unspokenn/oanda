@@ -1,9 +1,9 @@
 {
-    "name": "thecodemill/oanda",
+    "name": "unspoken/oanda",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "TheCodeMill\\OANDA\\": "src/"
+            "Unspoken\\OANDA\\": "src/"
         }
     },
     "require-dev": {
@@ -11,7 +11,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "TheCodeMill\\OANDA\\Tests\\": "tests/"
+            "Unspoken\\OANDA\\Tests\\": "tests/"
         }
     },
     "require": {

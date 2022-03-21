@@ -4,7 +4,7 @@ namespace TheCodeMill\OANDA\Tests;
 
 use TheCodeMill\OANDA\OANDAv20;
 
-class OANDAv20Test extends \PHPUnit_Framework_TestCase
+class OANDAv20Test extends \PHPUnit\Framework\TestCase
 {
     protected $apiKey = '123456-7890';
     protected $apiEnvironment = OANDAv20::ENV_PRACTICE;
@@ -12,8 +12,8 @@ class OANDAv20Test extends \PHPUnit_Framework_TestCase
     public function testCanBeInstantiated()
     {
         $this->assertInstanceOf(
-            OANDAv20::class,
-            new OANDAv20()
+            expected: OANDAv20::class,
+            actual: new OANDAv20()
         );
     }
 

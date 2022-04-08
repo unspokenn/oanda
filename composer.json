@@ -1,20 +1,57 @@
 {
-    "name": "unspoken/oanda",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Unspoken\\OANDA\\": "src/"
-        }
+  "name": "unspokenn/oanda",
+  "description": "Oanda Client Package.",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/unspokenn/oanda/issues",
+    "source": "https://github.com/unspokenn/oanda"
+  },
+  "authors": [
+    {
+      "name": "Andrew Robinson",
+      "homepage": "https://github.com/thecodemill",
+      "role": "Creator"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^9.5.10"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Unspoken\\OANDA\\Tests\\": "tests/"
-        }
-    },
-    "require": {
-        "guzzlehttp/guzzle": "^7.2"
+    {
+      "name": "Sadık Ergüven",
+      "homepage": "https://github.com/unspokenn",
+      "role": "Maintainer"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Unspokenn\\OANDA\\": "src/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5.10"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Unspokenn\\OANDA\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "guzzlehttp/guzzle": "^7.2",
+    "illuminate/macroable": "^9.0",
+    "illuminate/support": "^9.0",
+    "psr/http-message": "^1.0",
+    "symfony/psr-http-message-bridge": "^2.1"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "3.x-dev"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Unspokenn\OANDA;
+namespace Unspokenn\Oanda;
 
-use GuzzleHttp\{Client, Psr7\Request, Psr7\Response};
+use GuzzleHttp\{Client as GuzzleClient, Psr7\Request, Psr7\Response};
 use Illuminate\Support\Traits\Macroable;
 use JetBrains\PhpStorm\Pure;
 use Psr\Http\Message\ResponseInterface;
@@ -11,7 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 /**
  * Oanda V20 REST API(v3)
  */
-class OANDAv20
+class Client
 {
     use Macroable {
         Macroable::__call as macroCall;
@@ -115,7 +115,7 @@ class OANDAv20
      * Set the API key
      *
      * @param string $apiKey
-     * @return OANDAv20 $this
+     * @return \Unspokenn\Oanda\Client $this
      */
     public function setApiKey(string $apiKey): static
     {
@@ -161,7 +161,7 @@ class OANDAv20
      */
     protected function sendRequest(Request $request): ResponseInterface
     {
-        $client = new Client();
+        $client = new GuzzleClient();
 
         return $client->send($request);
     }

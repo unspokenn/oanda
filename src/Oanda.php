@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 
-namespace TheCodeMill\OANDA;
+namespace Unspokenn\Oanda;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 
-class OANDAv20
+class Oanda
 {
     /**
      * Defines the LIVE API url
@@ -40,23 +41,23 @@ class OANDAv20
      *
      * @var integer
      */
-    protected $apiEnvironment;
+    protected int $apiEnvironment;
 
     /**
      * API key for current connection
      *
      * @var string
      */
-    protected $apiKey;
+    protected string $apiKey;
 
     /**
      * Build an OANDA v20 API instance
      *
-     * @param integer $apiEnvironment Optional environment mode to set on instantiation
-     * @param string $apiKey Optional API key to set at instantiation
+     * @param integer|null $apiEnvironment Optional environment mode to set on instantiation
+     * @param string|null $apiKey Optional API key to set at instantiation
      * @return void
      */
-    public function __construct($apiEnvironment = null, $apiKey = null)
+    public function __construct(int $apiEnvironment = null, string $apiKey = null)
     {
         if ($apiEnvironment !== null) {
             $this->setApiEnvironment($apiEnvironment);
@@ -72,7 +73,7 @@ class OANDAv20
      *
      * @return integer
      */
-    public function getApiEnvironment()
+    public function getApiEnvironment(): int
     {
         return $this->apiEnvironment;
     }
@@ -81,9 +82,9 @@ class OANDAv20
      * Set the API environment
      *
      * @param integer $apiEnvironment
-     * @return TheCodeMill\OANDA\OANDAv20 $this
+     * @return \Unspokenn\Oanda\Oanda $this
      */
-    public function setApiEnvironment($apiEnvironment)
+    public function setApiEnvironment(int $apiEnvironment): static
     {
         $this->apiEnvironment = $apiEnvironment;
 
@@ -95,7 +96,7 @@ class OANDAv20
      *
      * @return string
      */
-    public function getApiKey()
+    public function getApiKey(): string
     {
         return $this->apiKey;
     }
@@ -104,9 +105,9 @@ class OANDAv20
      * Set the API key
      *
      * @param string $apiKey
-     * @return TheCodeMill\OANDA\OANDAv20 $this
+     * @return \Unspokenn\Oanda\Oanda $this
      */
-    public function setApiKey($apiKey)
+    public function setApiKey(string $apiKey): static
     {
         $this->apiKey = $apiKey;
 
@@ -118,11 +119,11 @@ class OANDAv20
      *
      * @param string $endpoint API endpoint
      * @param string $method Optional HTTP method
-     * @param mixed $data Data to send (encoded) with request
+     * @param mixed|null $data Data to send (encoded) with request
      * @param array $headers Additional headers to send with request
-     * @return GuzzleHttp\Psr7\Request
+     * @return \GuzzleHttp\Psr7\Request
      */
-    protected function prepareRequest($endpoint, $method = 'GET', $data = null, $headers = [])
+    protected function prepareRequest(string $endpoint, string $method = 'GET', mixed $data = null, array $headers = []): Request
     {
         $headers += [
             'Authorization' => $this->bearerToken(),
@@ -144,10 +145,11 @@ class OANDAv20
     /**
      * Send an HTTP request
      *
-     * @param GuzzleHttp\Psr7\Request $request
-     * @return GuzzleHttp\Psr7\Response
+     * @param \GuzzleHttp\Psr7\Request $request
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function sendRequest(Request $request)
+    protected function sendRequest(Request $request): \Psr\Http\Message\ResponseInterface
     {
         $client = new Client;
 
@@ -161,13 +163,14 @@ class OANDAv20
      * @param array $data Data to send (encoded) with request
      * @param array $headers Additional headers to send with request
      * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function makeGetRequest($endpoint, $data = [], $headers = [])
+    protected function makeGetRequest(string $endpoint, array $data = [], array $headers = []): mixed
     {
         $request = $this->prepareRequest($endpoint, 'GET', $data, $headers);
         $response = $this->sendRequest($request);
 
-        return $this->jsonDecode($response->getBody());
+        return $this->jsonDecode((string)$response->getBody());
     }
 
     /**
@@ -176,9 +179,10 @@ class OANDAv20
      * @param string $endpoint
      * @param array $data Data to send (encoded) with request
      * @param array $headers Additional headers to send with request
-     * @return mixed
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function makePostRequest($endpoint, $data = [], $headers = [])
+    protected function makePostRequest(string $endpoint, array $data = [], array $headers = []): \Psr\Http\Message\ResponseInterface
     {
         $request = $this->prepareRequest($endpoint, 'POST', $data, $headers);
 
@@ -191,9 +195,10 @@ class OANDAv20
      * @param string $endpoint
      * @param array $data Data to send (encoded) with request
      * @param array $headers Additional headers to send with request
-     * @return mixed
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function makePatchRequest($endpoint, $data = [], $headers = [])
+    protected function makePatchRequest(string $endpoint, array $data = [], array $headers = []): \Psr\Http\Message\ResponseInterface
     {
         $request = $this->prepareRequest($endpoint, 'PATCH', $data, $headers);
 
@@ -205,7 +210,7 @@ class OANDAv20
      *
      * @return string
      */
-    protected function baseUri()
+    protected function baseUri(): string
     {
         return $this->getApiEnvironment() == static::ENV_LIVE ? static::URL_LIVE : static::URL_PRACTICE;
     }
@@ -217,7 +222,7 @@ class OANDAv20
      * @param array $data Optional query string parameters
      * @return string
      */
-    protected function absoluteEndpoint($endpoint, $data = [])
+    protected function absoluteEndpoint(string $endpoint, array $data = []): string
     {
         $url = parse_url($endpoint);
 
@@ -236,7 +241,7 @@ class OANDAv20
      *
      * @return string
      */
-    protected function bearerToken()
+    protected function bearerToken(): string
     {
         return 'Bearer ' . $this->getApiKey();
     }
@@ -247,7 +252,7 @@ class OANDAv20
      * @param mixed $data
      * @return string
      */
-    protected function jsonEncode($data)
+    protected function jsonEncode(mixed $data): string
     {
         return json_encode($data);
     }
@@ -258,7 +263,7 @@ class OANDAv20
      * @param string $data
      * @return mixed
      */
-    protected function jsonDecode($data)
+    protected function jsonDecode(string $data): mixed
     {
         return json_decode($data, true);
     }
@@ -267,8 +272,9 @@ class OANDAv20
      * Get all accounts for current token
      *
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccounts()
+    public function getAccounts(): array
     {
         return $this->makeGetRequest('/v3/accounts');
     }
@@ -278,8 +284,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccount($accountId)
+    public function getAccount(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId);
     }
@@ -289,8 +296,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccountSummary($accountId)
+    public function getAccountSummary(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/summary');
     }
@@ -300,8 +308,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccountInstruments($accountId)
+    public function getAccountInstruments(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/instruments');
     }
@@ -311,9 +320,10 @@ class OANDAv20
      *
      * @param string $accountId
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function updateAccount($accountId, array $data)
+    public function updateAccount(string $accountId, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/configuration', $data);
     }
@@ -324,8 +334,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getAccountChanges($accountId, array $data)
+    public function getAccountChanges(string $accountId, array $data): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/changes', $data);
     }
@@ -336,8 +347,9 @@ class OANDAv20
      * @param string $instrumentName
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getInstrumentCandles($instrumentName, array $data = [])
+    public function getInstrumentCandles(string $instrumentName, array $data = []): array
     {
         return $this->makeGetRequest('/v3/instruments/' . $instrumentName . '/candles', $data);
     }
@@ -347,9 +359,10 @@ class OANDAv20
      *
      * @param string $accountId
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createOrder($accountId, array $data)
+    public function createOrder(string $accountId, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePostRequest('/v3/accounts/' . $accountId . '/orders', $data);
     }
@@ -360,8 +373,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getOrders($accountId, $data = [])
+    public function getOrders(string $accountId, array $data = []): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/orders', $data);
     }
@@ -371,8 +385,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getPendingOrders($accountId)
+    public function getPendingOrders(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/pendingOrders');
     }
@@ -383,8 +398,9 @@ class OANDAv20
      * @param string $accountId
      * @param string $orderSpecifier
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getOrder($accountId, $orderSpecifier)
+    public function getOrder(string $accountId, string $orderSpecifier): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/orders/' . $orderSpecifier);
     }
@@ -395,9 +411,10 @@ class OANDAv20
      * @param string $accountId
      * @param string $orderSpecifier
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function updateOrder($accountId, $orderSpecifier, array $data)
+    public function updateOrder(string $accountId, string $orderSpecifier, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/orders/' . $orderSpecifier, $data);
     }
@@ -407,11 +424,12 @@ class OANDAv20
      *
      * @param string $accountId
      * @param string $orderSpecifier
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function cancelPendingOrder($accountId, $orderSpecifier)
+    public function cancelPendingOrder(string $accountId, string $orderSpecifier): \Psr\Http\Message\ResponseInterface
     {
-        return $this->makePatchRequest('/v3/accounts/' . $accountId . '/orders/' . $orderSpecifier . '/cancel', $data);
+        return $this->makePatchRequest('/v3/accounts/' . $accountId . '/orders/' . $orderSpecifier . '/cancel');
     }
 
     /**
@@ -420,9 +438,10 @@ class OANDAv20
      * @param string $accountId
      * @param string $orderSpecifier
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function updateOrderClientExtensions($accountId, $orderSpecifier, array $data)
+    public function updateOrderClientExtensions(string $accountId, string $orderSpecifier, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/orders/' . $orderSpecifier . '/clientExtensions', $data);
     }
@@ -433,8 +452,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTrades($accountId, $data = [])
+    public function getTrades(string $accountId, array $data = []): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/trades', $data);
     }
@@ -443,10 +463,10 @@ class OANDAv20
      * Get a list of open trades for an account
      *
      * @param string $accountId
-     * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getOpenTrades($accountId)
+    public function getOpenTrades(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/openTrades');
     }
@@ -457,8 +477,9 @@ class OANDAv20
      * @param string $accountId
      * @param string $tradeSpecifier
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTrade($accountId, $tradeSpecifier)
+    public function getTrade(string $accountId, string $tradeSpecifier): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/trades/' . $tradeSpecifier);
     }
@@ -469,9 +490,10 @@ class OANDAv20
      * @param string $accountId
      * @param string $tradeSpecifier
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function closeTrade($accountId, $tradeSpecifier, array $data)
+    public function closeTrade(string $accountId, string $tradeSpecifier, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/trades/' . $tradeSpecifier . '/close', $data);
     }
@@ -482,9 +504,10 @@ class OANDAv20
      * @param string $accountId
      * @param string $tradeSpecifier
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function updateTradeClientExtensions($accountId, $tradeSpecifier, array $data)
+    public function updateTradeClientExtensions(string $accountId, string $tradeSpecifier, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/trades/' . $tradeSpecifier . '/clientExtensions', $data);
     }
@@ -495,9 +518,10 @@ class OANDAv20
      * @param string $accountId
      * @param string $tradeSpecifier
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function updateTradeOrders($accountId, $tradeSpecifier, array $data)
+    public function updateTradeOrders(string $accountId, string $tradeSpecifier, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/trades/' . $tradeSpecifier . '/orders', $data);
     }
@@ -507,8 +531,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getPositions($accountId)
+    public function getPositions(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/positions');
     }
@@ -518,8 +543,9 @@ class OANDAv20
      *
      * @param string $accountId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getOpenPositions($accountId)
+    public function getOpenPositions(string $accountId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/openPositions');
     }
@@ -530,8 +556,9 @@ class OANDAv20
      * @param string $accountId
      * @param string $instrumentName
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getInstrumentPosition($accountId, $instrumentName)
+    public function getInstrumentPosition(string $accountId, string $instrumentName): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/positions/' . $instrumentName);
     }
@@ -540,11 +567,12 @@ class OANDAv20
      * Close a position on an account
      *
      * @param string $accountId
-     * @param string $tradeSpecifier
+     * @param string $instrumentName
      * @param array $data
-     * @return GuzzleHttp\Psr7\Response
+     * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function closePosition($accountId, $instrumentName, array $data)
+    public function closePosition(string $accountId, string $instrumentName, array $data): \Psr\Http\Message\ResponseInterface
     {
         return $this->makePatchRequest('/v3/accounts/' . $accountId . '/positions/' . $instrumentName . '/close', $data);
     }
@@ -553,9 +581,11 @@ class OANDAv20
      * Get a paginated list of all transactions on an account
      *
      * @param string $accountId
+     * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactions($accountId, array $data = [])
+    public function getTransactions(string $accountId, array $data = []): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/transactions', $data);
     }
@@ -566,8 +596,9 @@ class OANDAv20
      * @param string $accountId
      * @param string $transactionId
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransaction($accountId, $transactionId)
+    public function getTransaction(string $accountId, string $transactionId): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/transactions/' . $transactionId);
     }
@@ -578,8 +609,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactionRange($accountId, array $data)
+    public function getTransactionRange(string $accountId, array $data): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/transactions/idrange', $data);
     }
@@ -590,8 +622,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getTransactionsSince($accountId, array $data)
+    public function getTransactionsSince(string $accountId, array $data): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/transactions/sinceid', $data);
     }
@@ -602,8 +635,9 @@ class OANDAv20
      * @param string $accountId
      * @param array $data
      * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getPricing($accountId, array $data)
+    public function getPricing(string $accountId, array $data): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/pricing', $data);
     }

@@ -1,36 +1,36 @@
 <?php
 
-namespace TheCodeMill\OANDA\Tests;
+namespace Unspokenn\Oanda\Tests;
 
-use TheCodeMill\OANDA\OANDAv20;
+use Unspokenn\Oanda\Oanda;
 
-class OANDAv20Test extends \PHPUnit\Framework\TestCase
+class OandaTest extends \PHPUnit\Framework\TestCase
 {
-    protected $apiKey = '123456-7890';
-    protected $apiEnvironment = OANDAv20::ENV_PRACTICE;
+    protected string $apiKey = '123456-7890';
+    protected int $apiEnvironment = Oanda::ENV_PRACTICE;
 
     public function testCanBeInstantiated()
     {
         $this->assertInstanceOf(
-            expected: OANDAv20::class,
-            actual: new OANDAv20()
+            expected: Oanda::class,
+            actual: new Oanda()
         );
     }
 
     public function testCanBeInstantiatedWithArguments()
     {
         $this->assertInstanceOf(
-            OANDAv20::class,
-            new OANDAv20($this->apiEnvironment, $this->apiKey)
+            Oanda::class,
+            new Oanda($this->apiEnvironment, $this->apiKey)
         );
     }
 
     public function testSetAndGetApiEnvironment()
     {
-        $oanda = new OANDAv20;
+        $oanda = new Oanda;
 
         $this->assertInstanceOf(
-            OANDAv20::class,
+            Oanda::class,
             $oanda->setApiEnvironment($this->apiEnvironment)
         );
 
@@ -42,10 +42,10 @@ class OANDAv20Test extends \PHPUnit\Framework\TestCase
 
     public function testSetAndGetApiKey()
     {
-        $oanda = new OANDAv20;
+        $oanda = new Oanda;
 
         $this->assertInstanceOf(
-            OANDAv20::class,
+            Oanda::class,
             $oanda->setApiKey($this->apiKey)
         );
 

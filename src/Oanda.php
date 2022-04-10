@@ -49,23 +49,18 @@ class Oanda
      * @var string
      */
     protected string $apiKey;
+    protected string $accountId;
 
     /**
-     * Build an OANDA v20 API instance
+     * Build an OANDA API instance
      *
-     * @param integer|null $apiEnvironment Optional environment mode to set on instantiation
-     * @param string|null $apiKey Optional API key to set at instantiation
-     * @return void
+     * @param \Illuminate\Config\Repository $config
      */
-    public function __construct(int $apiEnvironment = null, string $apiKey = null)
+    public function __construct($config)
     {
-        if ($apiEnvironment !== null) {
-            $this->setApiEnvironment($apiEnvironment);
-        }
-
-        if ($apiKey !== null) {
-            $this->setApiKey($apiKey);
-        }
+        $this->setApiEnvironment($config->get('oanda.environment'));
+        $this->setApiKey($config->get('oanda.api_key.key'));
+        $this->setAccountId($config->get('oanda.api_key.account'));
     }
 
     /**
@@ -110,6 +105,29 @@ class Oanda
     public function setApiKey(string $apiKey): static
     {
         $this->apiKey = $apiKey;
+
+        return $this;
+    }
+
+    /**
+     * Return the current API key
+     *
+     * @return string
+     */
+    public function getAccountId(): string
+    {
+        return $this->accountId;
+    }
+
+    /**
+     * Set the API key
+     *
+     * @param string $accountId
+     * @return \Unspokenn\Oanda\Oanda $this
+     */
+    public function setAccountId(string $accountId): static
+    {
+        $this->accountId = $accountId;
 
         return $this;
     }
@@ -640,5 +658,33 @@ class Oanda
     public function getPricing(string $accountId, array $data): array
     {
         return $this->makeGetRequest('/v3/accounts/' . $accountId . '/pricing', $data);
+    }
+
+    /**
+     * @param $method
+     * @param $parameters
+     * @return mixed
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        return (new static)->$method(...$parameters);
+    }
+
+
+    /**
+     * @param $method
+     * @param $parameters
+     * @return mixed
+     * @throws \BadMethodCallException
+     */
+    public function __call($method, $parameters)
+    {
+        if (!method_exists($this, $method)) {
+            throw new \BadMethodCallException(sprintf(
+                'Method %s::%s does not exist.', static::class, $method
+            ));
+        }
+
+        return $this->$method(...$parameters);
     }
 }

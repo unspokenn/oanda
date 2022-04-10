@@ -3,54 +3,29 @@ declare(strict_types=1);
 
 namespace Unspokenn\Oanda;
 
-use GuzzleHttp\{Client as GuzzleClient, Psr7\Request, Psr7\Response};
-use Illuminate\Support\Traits\Macroable;
+use GuzzleHttp\{Psr7\Response};
+use Http\Client\Common\HttpClientPool\LeastUsedClientPool;
 use JetBrains\PhpStorm\Pure;
 use Psr\Http\Message\ResponseInterface;
 
 /**
  * Oanda V20 REST API(v3)
  */
-class Client
+class Oanda
 {
-    use Macroable {
-        Macroable::__call as macroCall;
-    }
-
     /**
      * Defines the LIVE API url
      *
      * @const URL_LIVE
      */
-    public const URL_LIVE = 'https://api-fxtrade.oanda.com';
+    public const Production = 'https://api-fxtrade.oanda.com';
 
     /**
      * Defines the PRACTICE API url
      *
      * @const URL_PRACTICE
      */
-    public const URL_PRACTICE = 'https://api-fxpractice.oanda.com';
-
-    /**
-     * Defines the LIVE API environment
-     *
-     * @const ENV_LIVE
-     */
-    public const ENV_LIVE = 1;
-
-    /**
-     * Defines the PRACTICE API environment
-     *
-     * @const ENV_PRACTICE
-     */
-    public const ENV_PRACTICE = 2;
-
-    /**
-     * API environment for current connection
-     *
-     * @var int
-     */
-    public int $apiEnvironment;
+    public const Demo = 'https://api-fxpractice.oanda.com';
 
     /**
      * API key for current connection
@@ -62,41 +37,65 @@ class Client
     /**
      * Build an OANDA v20 API instance
      *
-     * @param int|null $apiEnvironment Optional environment mode to set on instantiation
+     * @param \Illuminate\Config\Repository $config
      * @param string|null $apiKey Optional API key to set at instantiation
      * @return void
      */
-    public function __construct(int $apiEnvironment = null, string $apiKey = null)
+    public function __construct(/*ConfigRepository */ $config, bool $production = false)
     {
-        if ($apiEnvironment !== null) {
-            $this->setApiEnvironment($apiEnvironment);
+        $httpClientPool = new LeastUsedClientPool();
+
+        if(isset($config['api_keys'])) {
+            foreach ($config['api_keys'] as $data) {
+                $httpClientPool->addHttpClient(HttpClientFactory::create($data['key']));
+            }
         }
 
-        if ($apiKey !== null) {
-            $this->setApiKey($apiKey);
-        }
+//        $messageFactory = MessageFactoryDiscovery::find();
+//
+//        $httpClient = HttpClientDiscovery::find();
+//        $httpAsyncClient = HttpAsyncClientDiscovery::find();
+//
+//        $httpClientPool = new LeastUsedClientPool();
+//        $httpClientPool->addHttpClient($httpClient);
+//        $httpClientPool->addHttpClient($httpAsyncClient);
+//
+//        $this->baseUrl = $production ? static::Production : static::Demo;
+//        foreach ($api_keys as $api_key)
+//        {
+//
+//        }
+//        $this->withBearerAuth();
+//
+//        if ($apiEnvironment !== null) {
+//            $this->setApiEnvironment($apiEnvironment);
+//        }
+//
+//        if ($apiKey !== null) {
+//            $this->setApiKey($apiKey);
+//        }
     }
 
     /**
      * Return the current API environment
      *
-     * @return int
+     * @return bool
      */
-    public function getApiEnvironment(): int
+    public function getProduction(): bool
     {
-        return $this->apiEnvironment;
+        return $this->production;
     }
 
 
     /**
      *  Set the API environment
      *
-     * @param int $apiEnvironment
+     * @param bool $production
      * @return $this
      */
-    public function setApiEnvironment(int $apiEnvironment): static
+    public function setProduction(bool $production): static
     {
-        $this->apiEnvironment = $apiEnvironment;
+        $this->production = $production;
 
         return $this;
     }
@@ -115,7 +114,7 @@ class Client
      * Set the API key
      *
      * @param string $apiKey
-     * @return \Unspokenn\Oanda\Client $this
+     * @return \Unspokenn\Oanda\Oanda $this
      */
     public function setApiKey(string $apiKey): static
     {
@@ -125,157 +124,13 @@ class Client
     }
 
     /**
-     * Prepare an HTTP request using a Guzzle client
-     *
-     * @param string $endpoint API endpoint
-     * @param string $method Optional HTTP method
-     * @param mixed|null $data Data to send (encoded) with request
-     * @param array $headers Additional headers to send with request
-     * @return Request
-     */
-    protected function prepareRequest(string $endpoint, string $method = 'GET', mixed $data = null, array $headers = []): Request
-    {
-        $headers += [
-            'Authorization' => $this->bearerToken(),
-            'Content-Type' => 'application/json'
-        ];
-
-        // Handle data
-        if ($method == 'GET') {
-            $endpoint = $this->absoluteEndpoint($endpoint, $data);
-            $body = null;
-        } else {
-            $endpoint = $this->absoluteEndpoint($endpoint);
-            $body = ($data !== null) ? $this->jsonEncode($data) : null;
-        }
-
-        return new Request($method, $endpoint, $headers, $body);
-    }
-
-    /**
-     * Send an HTTP request
-     *
-     * @param \GuzzleHttp\Psr7\Request $request
-     * @return \Psr\Http\Message\ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function sendRequest(Request $request): ResponseInterface
-    {
-        $client = new GuzzleClient();
-
-        return $client->send($request);
-    }
-
-    /**
-     * Helper method to automatically send a GET request and return the decoded response
-     *
-     * @param string $endpoint
-     * @param array $data Data to send (encoded) with request
-     * @param array $headers Additional headers to send with request
-     * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function makeGetRequest(string $endpoint, array $data = [], array $headers = []): mixed
-    {
-        $request = $this->prepareRequest($endpoint, 'GET', $data, $headers);
-        $response = $this->sendRequest($request);
-
-        return $this->jsonDecode((string)$response->getBody());
-    }
-
-    /**
-     * Helper method to automatically send a POST request and return the HTTP response
-     *
-     * @param string $endpoint
-     * @param array $data Data to send (encoded) with request
-     * @param array $headers Additional headers to send with request
-     * @return \Psr\Http\Message\ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function makePostRequest(string $endpoint, array $data = [], array $headers = []): ResponseInterface
-    {
-        $request = $this->prepareRequest($endpoint, 'POST', $data, $headers);
-
-        return $this->sendRequest($request);
-    }
-
-    /**
-     * Helper method to automatically send a PATCH request and return the HTTP response
-     *
-     * @param string $endpoint
-     * @param array $data Data to send (encoded) with request
-     * @param array $headers Additional headers to send with request
-     * @return ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function makePatchRequest(string $endpoint, array $data = [], array $headers = []): ResponseInterface
-    {
-        $request = $this->prepareRequest($endpoint, 'PATCH', $data, $headers);
-
-        return $this->sendRequest($request);
-    }
-
-    /**
      * Return the appropriate API base uri based on connection mode
      *
      * @return string
      */
     #[Pure] protected function baseUri(): string
     {
-        return $this->getApiEnvironment() == static::ENV_LIVE ? static::URL_LIVE : static::URL_PRACTICE;
-    }
-
-    /**
-     * Parse a complete API url given an endpoint
-     *
-     * @param string $endpoint
-     * @param array $data Optional query string parameters
-     * @return string
-     */
-    protected function absoluteEndpoint(string $endpoint, array $data = []): string
-    {
-        $url = parse_url($endpoint);
-
-        if (isset($url['query'])) {
-            parse_str($url['query'], $data);
-        }
-
-        return $this->baseUri()
-            . '/'
-            . trim($url['path'], '/')
-            . (!empty($data) ? '?' . http_build_query($data) : '');
-    }
-
-    /**
-     * Return the bearer token from the current API key
-     *
-     * @return string
-     */
-    #[Pure] protected function bearerToken(): string
-    {
-        return 'Bearer ' . $this->getApiKey();
-    }
-
-    /**
-     * Encode data as JSON
-     *
-     * @param mixed $data
-     * @return string
-     */
-    protected function jsonEncode(mixed $data): string
-    {
-        return json_encode($data);
-    }
-
-    /**
-     * Decode JSON using arrays (not objects)
-     *
-     * @param string $data
-     * @return mixed
-     */
-    protected function jsonDecode(string $data): mixed
-    {
-        return json_decode($data, true);
+        return $this->getProduction() ? static::Production : static::Demo;
     }
 
     /**

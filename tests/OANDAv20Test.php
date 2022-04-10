@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Unspokenn\Oanda\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Unspokenn\Oanda\Client;
+use Unspokenn\Oanda\Oanda;
 
 /**
  *
@@ -12,7 +12,7 @@ use Unspokenn\Oanda\Client;
 class OANDAv20Test extends TestCase
 {
     protected string $apiKey = '123456-7890';
-    protected int $apiEnvironment = Client::ENV_PRACTICE;
+    protected int $apiEnvironment = Oanda::ENV_PRACTICE;
 
     /**
      * @return void
@@ -20,8 +20,8 @@ class OANDAv20Test extends TestCase
     public function testCanBeInstantiated()
     {
         static::assertInstanceOf(
-            expected: Client::class,
-            actual: new Client()
+            expected: Oanda::class,
+            actual: new Oanda()
         );
     }
 
@@ -31,8 +31,8 @@ class OANDAv20Test extends TestCase
     public function testCanBeInstantiatedWithArguments()
     {
         static::assertInstanceOf(
-            Client::class,
-            new Client($this->apiEnvironment, $this->apiKey)
+            Oanda::class,
+            new Oanda($this->apiEnvironment, $this->apiKey)
         );
     }
 
@@ -41,10 +41,10 @@ class OANDAv20Test extends TestCase
      */
     public function testSetAndGetApiEnvironment()
     {
-        $oanda = new Client();
+        $oanda = new Oanda();
 
         static::assertInstanceOf(
-            Client::class,
+            Oanda::class,
             $oanda->setApiEnvironment($this->apiEnvironment)
         );
 
@@ -59,10 +59,10 @@ class OANDAv20Test extends TestCase
      */
     public function testSetAndGetApiKey()
     {
-        $oanda = new Client();
+        $oanda = new Oanda();
 
         static::assertInstanceOf(
-            Client::class,
+            Oanda::class,
             $oanda->setApiKey($this->apiKey)
         );
 

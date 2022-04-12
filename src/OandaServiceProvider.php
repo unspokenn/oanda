@@ -36,7 +36,7 @@ class OandaServiceProvider extends ServiceProvider implements DeferrableProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/oanda.php', 'oanda');
 
         $this->app->singleton(Oanda::class, function ($app) {
-            return new Oanda($app['config']);
+            return new Oanda();
         });
     }
 

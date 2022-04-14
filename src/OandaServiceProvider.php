@@ -21,7 +21,7 @@ class OandaServiceProvider extends ServiceProvider implements DeferrableProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([__DIR__ . '/../config/oanda.php' => config_path('oanda.php')], 'config');
     }
@@ -31,7 +31,7 @@ class OandaServiceProvider extends ServiceProvider implements DeferrableProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/oanda.php', 'oanda');
 

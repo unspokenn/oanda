@@ -5,13 +5,7 @@ namespace Unspokenn\Oanda;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\Request;
-use Http\Client\Common\Plugin\{DecoderPlugin,
-    ErrorPlugin,
-    HeaderSetPlugin,
-    LoggerPlugin,
-    RedirectPlugin,
-    ResponseSeekableBodyPlugin,
-    RetryPlugin};
+use Http\Client\Common\Plugin\{DecoderPlugin, ErrorPlugin, HeaderSetPlugin, LoggerPlugin, RedirectPlugin, RetryPlugin};
 use Http\Client\Common\PluginClient;
 use Illuminate\Support\Facades\{Config, Log};
 
@@ -248,11 +242,6 @@ class Oanda
      */
     protected function sendStreamRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface
     {
-        $options = [
-            'use_file_buffer' => true,
-            'memory_buffer_size' => 2097152,
-        ];
-
         $plugins[] = new HeaderSetPlugin([
             'Content-Type' => 'application/octet-stream',
             'Authorization' => 'Bearer ' . $this->getApiKey(),
@@ -260,10 +249,10 @@ class Oanda
         ]);
         $plugins[] = new DecoderPlugin(['use_content_encoding' => false]);
         $plugins[] = new ErrorPlugin();
-        $plugins[] = new ResponseSeekableBodyPlugin($options);
 
         return $this->client($plugins, [
             'version' => 1.0,
+            'timeout' => 3,
             'synchronous' => true,
             'allow_redirects' => [
                 'max' => 5,
@@ -299,10 +288,10 @@ class Oanda
      * @param string $endpoint
      * @param array $data Data to send (encoded) with request
      * @param array $headers Additional headers to send with request
-     * @return mixed
+     * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException|\Psr\Http\Client\ClientExceptionInterface
      */
-    protected function makeGetRequest(string $endpoint, array $data = [], array $headers = []): mixed
+    protected function makeGetRequest(string $endpoint, array $data = [], array $headers = []): array
     {
         $request = $this->prepareRequest($endpoint, 'GET', $data, $headers);
         $response = $this->sendRequest($request);
@@ -792,6 +781,8 @@ class Oanda
     }
 
     /**
+     * Get pricing information for a list of instruments on an account
+     *
      * @param array $data
      * @return \Psr\Http\Message\ResponseInterface
      * @throws \Psr\Http\Client\ClientExceptionInterface
